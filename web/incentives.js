@@ -393,8 +393,8 @@ d3.csv('incentives.csv', function (data) {
     // Specify a range chart to link the brush extent of the range with the zoom focue of the current chart.
     .rangeChart(earningsVolumeChart)
     .x(d3.time.scale().domain([new Date(2014, 0, 1), new Date(2014, 11, 31)]))  // TODO: Replace with first/last data entry dates
-    .round(d3.time.month.round)
-    .xUnits(d3.time.months)
+    // .round(d3.time.month.round)
+    .xUnits(d3.time.days)
     .elasticY(true)
     .renderHorizontalGridLines(true)
     .legend(dc.legend().x(800).y(10).itemHeight(13).gap(5))
@@ -433,9 +433,9 @@ d3.csv('incentives.csv', function (data) {
     .centerBar(true)
     .gap(1)
     .x(d3.time.scale().domain([new Date(2014, 0, 1), new Date(2014, 11, 31)]))  // TODO: Replace with first/last data entry dates
-    .round(d3.time.month.round)
+    .round(d3.time.day.round)
     .alwaysUseRounding(true)
-    .xUnits(d3.time.months);
+    .xUnits(d3.time.days);
 
   /*
   //#### Data Count
