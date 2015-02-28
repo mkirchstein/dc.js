@@ -5,7 +5,7 @@ require 'csv'
 headers = ['date', 'uid', 'gender', 'age', 'incentive', 'amount', 'amount_possible']
 rows = []
 users = []
-num_users = 10
+num_users = 1000
 incentives = [
   { name: 'steps', label: 'Step Tracking', likelyhood: 0.2, efficency: 0.9 }, 
   { name: 'sleep', label: 'Sleep Tracking', likelyhood: 0.5, efficency: 0.7 },

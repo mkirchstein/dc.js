@@ -219,7 +219,7 @@ d3.csv('incentives.csv', function (data) {
     .maxBubbleRelativeSize(0.3)
     .x(d3.scale.linear().domain([200, 2500]))
     .y(d3.scale.linear().domain([0, 100]))
-    .r(d3.scale.linear().domain([0, 4000]))
+    .r(d3.scale.linear().domain([0, 400000]))
     //##### Elastic Scaling
     //`.elasticX` and `.elasticX` determine whether the chart should rescale each axis to fit data.
     //The `.yAxisPadding` and `.xAxisPadding` add padding to data above and below their max values in the same unit domains as the Accessors.
