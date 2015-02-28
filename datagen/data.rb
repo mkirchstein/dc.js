@@ -7,9 +7,9 @@ rows = []
 users = []
 num_users = 10
 incentives = [
-  { name: 'steps', label: 'Step Tracking', randThreshold: 0.2 }, 
-  { name: 'sleep', label: 'Sleep Tracking', randThreshold: 0.5 },
-  { name: 'food', label: 'Food Tracking', randThreshold: 0.7 }
+  { name: 'steps', label: 'Step Tracking', likelyhood: 0.2, efficency: 0.9 }, 
+  { name: 'sleep', label: 'Sleep Tracking', likelyhood: 0.5, efficency: 0.7 },
+  { name: 'food', label: 'Food Tracking', likelyhood: 0.7, efficency: 0.5 }
 ]
 genders = ['female','male']
 daily_max = 5
@@ -33,8 +33,8 @@ puts headers.join(',')+"\n"
   # puts date
   users.each do |user|
     incentives.each do |incentive|
-      if rand > incentive[:randThreshold]
-        amount = rand(daily_max)
+      if rand > incentive[:likelyhood]
+        amount = (daily_max * rand(incentive[:efficency])).round
         row = [date, user[:uid], user[:gender], user[:age], incentive[:name], amount, daily_max]
         # rows << row
         puts row.join(',')+"\n"
