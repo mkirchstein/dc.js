@@ -10,7 +10,7 @@
 // filtered by other page controls.
 var earningsCategoriesChart = dc.pieChart('#earnings-categories-chart');
 var genderChart = dc.pieChart('#gender-chart');
-var fluctuationChart = dc.barChart('#fluctuation-chart');
+var ageChart = dc.barChart('#age-chart');
 var quarterChart = dc.pieChart('#quarter-chart');
 var dayOfWeekChart = dc.rowChart('#day-of-week-chart');
 var earningsChart = dc.lineChart('#earnings-chart');
@@ -65,7 +65,7 @@ d3.csv('incentives.csv', function (data) {
   var incentives = crossfilter(data);
   var all = incentives.groupAll();
 
-  // dimension by year
+  // dimension by month
   var monthlyDimension = incentives.dimension(function (d) {
     return monthNames[d.month];
   });
@@ -123,7 +123,7 @@ d3.csv('incentives.csv', function (data) {
       return p;
     },
     function () {
-      return { days: 0, total: { steps: 0, sleep: 0, food: 0 }};
+      return { days: 0, total: { Activity: 0, Sleep: 0, Food: 0 }};
     }
   );
 
@@ -143,10 +143,10 @@ d3.csv('incentives.csv', function (data) {
   var genderGroup = gender.group();
 
   // determine a histogram of percent changes
-  var fluctuation = incentives.dimension(function (d) {
-    return Math.round((d.amount_possible - d.amount) / d.amount * 100);
+  var age = incentives.dimension(function (d) {
+    return d.age;
   });
-  var fluctuationGroup = fluctuation.group();
+  var ageGroup = age.group();
 
   // summerize volume by quarter
   var quarter = incentives.dimension(function (d) {
@@ -185,7 +185,7 @@ d3.csv('incentives.csv', function (data) {
   //on other charts within the same chart group.
   /* dc.bubbleChart('#monthly-bubble-chart', 'chartGroup') */
   monthlyBubbleChart
-    .width(990) // (optional) define chart width, :default = 200
+    .width(1050) // (optional) define chart width, :default = 200
     .height(250)  // (optional) define chart height, :default = 200
     .transitionDuration(1500) // (optional) define chart transition duration, :default = 750
     .margins({top: 10, right: 50, bottom: 30, left: 40})
@@ -204,9 +204,10 @@ d3.csv('incentives.csv', function (data) {
     //* `.valueAccessor` Identifies the `Y` value that will be applied agains the `.y()` to identify pixel location
     //* `.radiusValueAccessor` Identifies the value that will be applied agains the `.r()` determine radius size,
     //*     by default this maps linearly to [0,100]
-    .colorAccessor(function (d) {
-      return d.value.claimedPercentage;
-    })
+    // .colorAccessor(function (d) {
+    //   return d.value.claimedPercentage;
+    // })
+    .colors(['#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#dadaeb'])
     .keyAccessor(function (p) {
       return p.value.amount;
     })
@@ -219,11 +220,11 @@ d3.csv('incentives.csv', function (data) {
     .maxBubbleRelativeSize(0.3)
     .x(d3.scale.linear().domain([200, 2500]))
     .y(d3.scale.linear().domain([0, 100]))
-    .r(d3.scale.linear().domain([0, 400000]))
+    .r(d3.scale.linear().domain([0, 50000]))
     //##### Elastic Scaling
     //`.elasticX` and `.elasticX` determine whether the chart should rescale each axis to fit data.
     //The `.yAxisPadding` and `.xAxisPadding` add padding to data above and below their max values in the same unit domains as the Accessors.
-    // .elasticY(true)
+    .elasticY(true)
     .elasticX(true)
     .yAxisPadding(10)
     .xAxisPadding(200)
@@ -241,10 +242,10 @@ d3.csv('incentives.csv', function (data) {
     .title(function (p) {
       return [
         p.key,
-        'Count: ' + numberFormat(p.value.count),
-        'Total Amount: ' + numberFormat(p.value.amount),
-        'Total Amount Possible: ' + numberFormat(p.value.amountPossible),
-        'Claimed Percentage: ' + numberFormat(p.value.claimedPercentage) + '%'
+        'Participants: ' + p.value.count,
+        'Total Amount: $' + p.value.amount,
+        'Total Amount Possible: $' + p.value.amountPossible,
+        'Claimed Percentage: ' + Math.round(p.value.claimedPercentage) + '%'
       ].join('\n');
     })
     //#### Customize Axis
@@ -270,11 +271,11 @@ d3.csv('incentives.csv', function (data) {
      * but you can overwrite it with a closure */
     .label(function (d) {
       if (earningsCategoriesChart.hasFilter() && !earningsCategoriesChart.hasFilter(d.key)) {
-        return d.key + '(0%)';
+        return d.key + ' (0%)';
       }
       var label = d.key;
       if (all.value()) {
-        label += '(' + Math.floor(d.value / all.value() * 100) + '%)';
+        label += ' (' + Math.floor(d.value / all.value() * 100) + '%)';
       }
       return label;
     }) /*
@@ -300,11 +301,11 @@ d3.csv('incentives.csv', function (data) {
     .group(genderGroup)
     .label(function (d) {
       if (genderChart.hasFilter() && !genderChart.hasFilter(d.key)) {
-        return d.key + '(0%)';
+        return d.key + ' (0%)';
       }
       var label = d.key;
       if (all.value()) {
-        label += '(' + Math.floor(d.value / all.value() * 100) + '%)';
+        label += ' (' + Math.floor(d.value / all.value() * 100) + '%)';
       }
       return label;
     }) /*
@@ -322,15 +323,16 @@ d3.csv('incentives.csv', function (data) {
     .colorAccessor(function(d, i){return d.value;})
     */;
 
-  quarterChart.width(180)
+  quarterChart
+    .width(180)
     .height(180)
     .radius(80)
     .innerRadius(30)
     .dimension(quarter)
     .group(quarterGroup);
 
-  //#### Row Chart
-  dayOfWeekChart.width(180)
+  dayOfWeekChart
+    .width(180)
     .height(180)
     .margins({top: 20, left: 10, right: 10, bottom: 20})
     .group(dayOfWeekGroup)
@@ -347,44 +349,39 @@ d3.csv('incentives.csv', function (data) {
     .elasticX(true)
     .xAxis().ticks(4);
 
-  //#### Bar Chart
-  // Create a bar chart and use the given css selector as anchor. You can also specify
-  // an optional chart group for this chart to be scoped within. When a chart belongs
-  // to a specific group then any interaction with such chart will only trigger redraw
-  // on other charts within the same chart group.
-  /* dc.barChart('#volume-month-chart') */
-  fluctuationChart.width(420)
+  ageChart
+    .width(300)
     .height(180)
     .margins({top: 10, right: 50, bottom: 30, left: 40})
-    .dimension(fluctuation)
-    .group(fluctuationGroup)
+    .dimension(age)
+    .group(ageGroup)
     .elasticY(true)
     // (optional) whether bar should be center to its x value. Not needed for ordinal chart, :default=false
-    .centerBar(true)
+    // .centerBar(true)
     // (optional) set gap between bars manually in px, :default=2
     .gap(1)
     // (optional) set filter brush rounding
     .round(dc.round.floor)
     .alwaysUseRounding(true)
-    .x(d3.scale.linear().domain([-25, 25]))
+    .x(d3.scale.linear().domain([18, 60]))
     .renderHorizontalGridLines(true)
     // customize the filter displayed in the control span
-    .filterPrinter(function (filters) {
-      var filter = filters[0], s = '';
-      s += numberFormat(filter[0]) + '% -> ' + numberFormat(filter[1]) + '%';
-      return s;
-    });
+    // .filterPrinter(function (filters) {
+    //   var filter = filters[0], s = '';
+    //   s += numberFormat(filter[0]) + '% -> ' + numberFormat(filter[1]) + '%';
+    //   return s;
+    // });
 
   // Customize axis
-  fluctuationChart.xAxis().tickFormat(
-    function (v) { return v + '%'; });
-  fluctuationChart.yAxis().ticks(5);
+  // ageChart.xAxis().tickFormat(
+  //   function (v) { return v + '%'; });
+  ageChart.yAxis().ticks(5);
 
   //#### Stacked Area Chart
   //Specify an area chart, by using a line chart with `.renderArea(true)`
   earningsChart
     .renderArea(true)
-    .width(990)
+    .width(1050)
     .height(200)
     .transitionDuration(1000)
     .margins({top: 30, right: 50, bottom: 25, left: 40})
@@ -392,47 +389,42 @@ d3.csv('incentives.csv', function (data) {
     .mouseZoomable(true)
     // Specify a range chart to link the brush extent of the range with the zoom focue of the current chart.
     .rangeChart(earningsVolumeChart)
-    .x(d3.time.scale().domain([new Date(2014, 0, 1), new Date(2014, 11, 31)]))  // TODO: Replace with first/last data entry dates
+    .x(d3.time.scale().domain([new Date(2015, 0, 1), new Date(2015, 11, 31)]))  // TODO: Replace with first/last data entry dates
     // .round(d3.time.month.round)
     .xUnits(d3.time.days)
     .elasticY(true)
     .renderHorizontalGridLines(true)
-    .legend(dc.legend().x(800).y(10).itemHeight(13).gap(5))
+    .legend(dc.legend().x(900).y(0).itemHeight(13).gap(5))
     .brushOn(false)
     // Add the base layer of the stack with group. The second parameter specifies a series name for use in the legend
     // The `.valueAccessor` will be used for the base layer
-    .group(incentiveEarningsByDayGroup, 'Steps Earnings')
+    .group(incentiveEarningsByDayGroup, 'Activity')
     .valueAccessor(function (d) {
-      // console.log('>>>> d.value.total.steps', d.value.total.steps);
-      return d.value.total.steps;
+      console.log('>>>> d.value.total', d.value.total);
+      return d.value.total.Activity;
     })
     // stack additional layers with `.stack`. The first paramenter is a new group.
     // The second parameter is the series name. The third is a value accessor.
-    .stack(incentiveEarningsByDayGroup, 'Sleep Earnings', function (d) {
-      // console.log('>>>> d.value.total.sleep', d.value.total.sleep);
-      return d.value.total.sleep;
+    .stack(incentiveEarningsByDayGroup, 'Sleep', function (d) {
+      return d.value.total.Sleep;
     })
-    .stack(incentiveEarningsByDayGroup, 'Food Earnings', function (d) {
-      // console.log('>>>> d.value.total.food', d.value.total.food);
-      return d.value.total.food;
+    .stack(incentiveEarningsByDayGroup, 'Food', function (d) {
+      return d.value.total.Food;
     })
     // title can be called by any stack layer.
     .title(function (d) {
-      var value = d.value.avg ? d.value.avg : d.value;
-      if (isNaN(value)) {
-        value = 0;
-      }
-      return dateFormat(d.key) + '\n' + numberFormat(value);
+      return dateFormat(d.key) + '\n $' + d.amount;
     });
 
-  earningsVolumeChart.width(990)
+  earningsVolumeChart
+    .width(1050)
     .height(40)
     .margins({top: 0, right: 50, bottom: 20, left: 40})
     .dimension(earningsDays)
     .group(earningsVolumeByDayGroup)
     .centerBar(true)
     .gap(1)
-    .x(d3.time.scale().domain([new Date(2014, 0, 1), new Date(2014, 11, 31)]))  // TODO: Replace with first/last data entry dates
+    .x(d3.time.scale().domain([new Date(2015, 0, 1), new Date(2015, 11, 31)]))  // TODO: Replace with first/last data entry dates
     .round(d3.time.day.round)
     .alwaysUseRounding(true)
     .xUnits(d3.time.days);
@@ -485,21 +477,24 @@ d3.csv('incentives.csv', function (data) {
     .group(function (d) {
       return monthNames[d.dd.getMonth()] + ' ' + d.dd.getFullYear();
     })
-    .size(10) // (optional) max number of records to be shown, :default = 25
+    .size(25) // (optional) max number of records to be shown, :default = 25
     // There are several ways to specify the columns; see the data-table documentation.
     // This code demonstrates generating the column header automatically based on the columns.
     .columns([
       'date',    // d['date'], ie, a field accessor; capitalized automatically
       'incentive',
-      'amount',
-      'amount_possible',
       {
-        label: 'Percent Earned', // desired format of column name 'Change' when used as a label with a function.
+        label: 'Earned',
         format: function (d) {
-          return numberFormat(d.amount / d.amount_possible + 100);
+          return '$'+ d.amount;
         }
       },
-      'uid',
+      {
+        label: 'Earned %',
+        format: function (d) {
+          return ''+ Math.round(d.amount / d.amount_possible * 100) +'%';
+        }
+      },
       'gender',
       'age'
     ])
